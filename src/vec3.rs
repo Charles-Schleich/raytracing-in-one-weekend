@@ -32,8 +32,8 @@ impl Vec3 {
         }
     }
 
-    pub fn unit_vector(mut self) -> f64 {
-        f64::sqrt(self.len_sqred())
+    pub fn unit_vector(mut self) -> Vec3 {
+        self / self.len()
     }
 
     pub fn len(mut self) -> f64 {
@@ -45,9 +45,11 @@ impl Vec3 {
     }
 
     pub fn write_colour(self) {
-        let i_r = (256.0*self.x).round() as u8;
-        let i_g = (256.0*self.y).round() as u8;
-        let i_b = (256.0*self.z).round() as u8;
+        let i_r = (255.999 * self.x).round() as u16;
+        let i_g = (255.999 * self.y).round() as u16;
+        let i_b = (255.999 * self.z).round() as u16;
+        // eprintln!("{} {}\n", self.z, i_b);
+
         print!("{} {} {}\n", i_r, i_g, i_b)
     }
 }
@@ -149,6 +151,20 @@ fn test_add_vecs() {
     assert_eq!(a + b, c);
 }
 
+// Convenience
+impl Mul<Vec3> for f64 {
+    type Output = Vec3;
+
+    fn mul(self, other: Vec3) -> Vec3 {
+        Vec3 {
+            x: other.x * self,
+            y: other.y * self,
+            z: other.z * self,
+        }
+    }
+}
+
+// TEST
 #[test]
 fn test_mult_vecs() {
     let a = Vec3 {
