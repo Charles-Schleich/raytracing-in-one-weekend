@@ -6,12 +6,29 @@ pub mod ray;
 use ray::*;
 
 fn ray_colour(r: Ray) -> Colour {
+    if hit_sphere(Point3{x: 0.0,y: 0.0,z: -1.0}, 0.5, &r){
+        return Colour{x: 1.0,y: 0.0,z: 0.0} 
+    }
+
     let unit_direction = r.dir.unit_vector();
     let t = 0.5 * (unit_direction.y + 1.0);
     let colour = (1.0 - t) * Colour {x: 1.0,y: 1.0,z: 1.0,} + t*Colour{x: 0.5,y: 0.7,z: 1.0};
     // eprintln!("{} {}",t,colour);
     return colour;
 }
+
+
+fn hit_sphere(center:Point3, rad:f64, ray:&Ray) -> bool {
+    // Origin Circle
+    let oc = ray.orig - center;
+    let a = ray.dir.dot(ray.dir);
+    let b = 2.0*oc.dot(ray.dir);
+    let c = oc.dot(oc) - rad*rad;
+    let discriminant = b*b - 4.0*a*c;
+    return discriminant>0.0;
+}
+
+
 
 fn main() {
     // Image stuff
@@ -44,12 +61,13 @@ fn main() {
             z: focal_length,
         };
     // (0,0,0) - (1.8,0,0)      - (0,1,0)      - (0,0,1)  = (-1.8,-1,-1)
+    eprintln!("{}",lower_left_corner);
 
     // Render
     print!("P3\n{} {}\n255\n", img_width, img_height);
     //
     for row in (0..img_height).rev() {
-        eprintln!("Lines Remaining {}", row);
+        // eprintln!("Lines Remaining {}", row);
         for col in 0..img_width {
             let u =  col as f64 / (img_width) as f64;
             let v = row as f64 / (img_height) as f64;
