@@ -131,6 +131,15 @@ impl fmt::Display for Vec3 {
     }
 }
 
+// Convienences
+pub fn unit_vector(mut v:Vec3) -> Vec3 {
+    v/ v.len()
+}
+
+
+
+// TEST
+
 #[test]
 fn test_add_vecs() {
     let a = Vec3 {
