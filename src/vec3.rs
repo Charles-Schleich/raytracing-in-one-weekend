@@ -24,7 +24,7 @@ impl Vec3 {
         return self.x * other.x + self.y * other.y + self.z * other.z;
     }
 
-    pub fn cross(mut self, other: Vec3) -> Vec3 {
+    pub fn cross(self, other: Vec3) -> Vec3 {
         Vec3 {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
@@ -32,11 +32,11 @@ impl Vec3 {
         }
     }
 
-    pub fn unit_vector(mut self) -> Vec3 {
+    pub fn unit_vector(self) -> Vec3 {
         self / self.len()
     }
 
-    pub fn len(mut self) -> f64 {
+    pub fn len(self) -> f64 {
         f64::sqrt(self.len_sqred())
     }
 
@@ -48,11 +48,11 @@ impl Vec3 {
         let i_r = (255.999 * self.x).round() as u16;
         let i_g = (255.999 * self.y).round() as u16;
         let i_b = (255.999 * self.z).round() as u16;
-        // eprintln!("{} {}\n", self.z, i_b);
-
         print!("{} {} {}\n", i_r, i_g, i_b)
     }
 }
+
+
 
 impl Neg for Vec3 {
     type Output = Vec3;
@@ -85,6 +85,19 @@ impl Add for Vec3 {
             x: &self.x + other.x,
             y: &self.y + other.y,
             z: &self.z + other.z,
+        }
+    }
+}
+
+// Convenience
+impl Mul<Vec3> for f64 {
+    type Output = Vec3;
+
+    fn mul(self, other: Vec3) -> Vec3 {
+        Vec3 {
+            x: other.x * self,
+            y: other.y * self,
+            z: other.z * self,
         }
     }
 }
@@ -131,10 +144,11 @@ impl fmt::Display for Vec3 {
     }
 }
 
-// Convienences
 pub fn unit_vector(mut v:Vec3) -> Vec3 {
     v/ v.len()
 }
+
+
 
 
 
@@ -160,18 +174,6 @@ fn test_add_vecs() {
     assert_eq!(a + b, c);
 }
 
-// Convenience
-impl Mul<Vec3> for f64 {
-    type Output = Vec3;
-
-    fn mul(self, other: Vec3) -> Vec3 {
-        Vec3 {
-            x: other.x * self,
-            y: other.y * self,
-            z: other.z * self,
-        }
-    }
-}
 
 // TEST
 #[test]
