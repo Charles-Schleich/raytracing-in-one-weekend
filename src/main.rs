@@ -6,7 +6,8 @@ pub mod ray;
 use ray::*;
 
 fn ray_colour(r: Ray) -> Colour {
-    let t = hit_sphere(Point3{x: 0.0,y: 0.0,z: -1.0}, 0.5, &r);
+    // let t = hit_sphere(Point3{x: 0.0,y: 0.0,z: -1.0}, 0.5, &r);
+    let t =0.1;
     if t>0.0 {
         let N =  unit_vector(r.at(t) - Vec3{x:0.0,y:0.0,z:-1.0}); 
         return 0.5*Colour{x:N.x+1.0, y:N.y+1.0, z:N.z+1.0}
@@ -20,19 +21,6 @@ fn ray_colour(r: Ray) -> Colour {
 }
 
 
-fn hit_sphere(center:Point3, rad:f64, ray:&Ray) -> f64 {
-    // Vec from center -> Ray  
-    let oc:Vec3 = ray.orig - center;
-    let a = ray.dir.dot(ray.dir);
-    let b = 2.0*oc.dot(ray.dir);
-    let c = oc.dot(oc) - rad*rad;
-    let discriminant = b*b - 4.0*a*c;
-    if discriminant<0.0{
-        return -1.0
-    }
-    return (-b-discriminant.sqrt()) / (2.0*a);
-
-}
 
 
 
