@@ -3,15 +3,16 @@ use crate::ray::*;
 use crate::hittable::*;
 use crate::hittable::Hittable;
 
+
 pub struct Sphere{
     pub center: Point3,
     pub radius: f64
 }
 
-type FrontFace = bool;
+type IsFrontFace = bool;
 type Normal = Vec3;
 
-pub fn set_face_normal(ray:&Ray, outward_normal: Vec3) -> (FrontFace, Normal) {
+pub fn set_face_normal(ray:&Ray, outward_normal: Vec3) -> (IsFrontFace, Normal) {
     let front_face = ray.dir.dot(outward_normal) < 0.0;
     if front_face {
         return ( front_face, outward_normal);
@@ -19,6 +20,7 @@ pub fn set_face_normal(ray:&Ray, outward_normal: Vec3) -> (FrontFace, Normal) {
         return ( front_face, -outward_normal);
     }
 }
+
 
 impl Hittable for Sphere {
 
@@ -29,7 +31,7 @@ impl Hittable for Sphere {
         let c = oc.len_sqred() - self.radius*self.radius;
         let discriminant = half_b*half_b - a*c;
 
-        if discriminant > 0.0{
+        if discriminant > 0.0 {
             let root = discriminant.sqrt();
 
             let mut temp = (-half_b - root)/a;

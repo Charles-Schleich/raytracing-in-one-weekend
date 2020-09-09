@@ -43,13 +43,35 @@ impl Vec3 {
     pub fn len_sqred(self) -> f64 {
         return &self.x * &self.x + &self.y * &self.y + &self.z * &self.z;
     }
+}
 
-    pub fn write_colour(self) {
-        let i_r = (255.999 * self.x).round() as u16;
-        let i_g = (255.999 * self.y).round() as u16;
-        let i_b = (255.999 * self.z).round() as u16;
+
+
+impl Colour{
+  pub fn write_colour(self, samples_per_pixel:i32) {
+        let mut r = self.x;
+        let mut g = self.y;
+        let mut b = self.z;
+
+        // divide the colour by number of samples
+        let scale = 1.0 / samples_per_pixel as f64;        
+        r = r*scale;        
+        g = g*scale;        
+        b = b*scale;        
+
+
+        let i_r = (255.999 * clamp(r,0.0,0.999)).round() as u16;
+        let i_g = (255.999 * clamp(g,0.0,0.999)).round() as u16;
+        let i_b = (255.999 * clamp(b,0.0,0.999)).round() as u16;
         print!("{} {} {}\n", i_r, i_g, i_b)
     }
+}
+
+
+fn clamp(x:f64, min:f64, max:f64) -> f64 {
+    if x < min { return min; }
+    if x > max { return max; }
+    return x;
 }
 
 
@@ -144,6 +166,8 @@ impl fmt::Display for Vec3 {
     }
 }
 
+
+
 pub fn unit_vector(mut v:Vec3) -> Vec3 {
     v/ v.len()
 }
@@ -152,8 +176,8 @@ pub fn unit_vector(mut v:Vec3) -> Vec3 {
 
 
 
-// TEST
 
+// TEST
 #[test]
 fn test_add_vecs() {
     let a = Vec3 {

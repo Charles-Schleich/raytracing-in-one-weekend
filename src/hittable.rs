@@ -57,6 +57,7 @@ impl Hittable for HittableList{
         
         for object in self.objects.iter() {
             if let Some(hit) = object.hit(&ray, tmin, closest_so_far) {
+                
                 closest_so_far = hit.t;
                 hit_anything = Some(hit);
             }
