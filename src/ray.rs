@@ -9,7 +9,6 @@ pub struct Ray {
 impl Ray {
  
     pub fn new(o: Point3, d: Vec3) -> Ray {
-
         Ray {
                 dir: d,
                 orig: o,

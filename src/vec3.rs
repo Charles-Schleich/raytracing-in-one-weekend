@@ -1,5 +1,7 @@
 use std::fmt;
 use std::ops::{Add, Div, Mul, Neg, Sub};
+use rand::prelude::*;
+
 
 pub type Point3 = Vec3;
 pub type Colour = Vec3;
@@ -43,7 +45,39 @@ impl Vec3 {
     pub fn len_sqred(self) -> f64 {
         return &self.x * &self.x + &self.y * &self.y + &self.z * &self.z;
     }
-}
+
+    // random vector
+    pub fn random() -> Vec3 {
+        let mut rng = rand::thread_rng();
+        return  Vec3 {
+            x: rng.gen::<f64>(),
+            y: rng.gen::<f64>(),
+            z: rng.gen::<f64>(),
+        }
+    }
+
+
+    pub fn random_range(min:f64,max:f64) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        return  Vec3 {
+            x: rng.gen_range(min, max),
+            y: rng.gen_range(min, max),
+            z: rng.gen_range(min, max),
+        }
+    }
+
+    pub fn random_in_unit_sphere() -> Vec3 {
+        loop {
+            let v = Vec3::random_range(-1.0, 1.0);
+            if v.len_sqred() >= 1.0 {continue;} 
+            return v;
+        }
+    }
+
+
+} // end of impl for Vec3
+
+
 
 
 
@@ -54,10 +88,11 @@ impl Colour{
         let mut b = self.z;
 
         // divide the colour by number of samples
-        let scale = 1.0 / samples_per_pixel as f64;        
-        r = r*scale;        
-        g = g*scale;        
-        b = b*scale;        
+        let scale = 1.0 / samples_per_pixel as f64;
+        // the sqrt is to Gamma correct for gamma 2.0
+        r = f64::sqrt(r*scale);
+        g = f64::sqrt(g*scale);        
+        b = f64::sqrt(b*scale);        
 
 
         let i_r = (255.999 * clamp(r,0.0,0.999)).round() as u16;
@@ -75,7 +110,7 @@ fn clamp(x:f64, min:f64, max:f64) -> f64 {
 }
 
 
-
+// 
 impl Neg for Vec3 {
     type Output = Vec3;
     fn neg(self) -> Vec3 {
@@ -166,8 +201,6 @@ impl fmt::Display for Vec3 {
     }
 }
 
-
-
 pub fn unit_vector(mut v:Vec3) -> Vec3 {
     v/ v.len()
 }
@@ -197,7 +230,6 @@ fn test_add_vecs() {
     };
     assert_eq!(a + b, c);
 }
-
 
 // TEST
 #[test]
