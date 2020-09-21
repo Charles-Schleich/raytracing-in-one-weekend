@@ -1,7 +1,7 @@
 use std::fmt;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 use rand::prelude::*;
-
+use std::f64::consts::PI;
 
 pub type Point3 = Vec3;
 pub type Colour = Vec3;
@@ -66,6 +66,8 @@ impl Vec3 {
         }
     }
 
+
+//  Different Diffuse Methods
     pub fn random_in_unit_sphere() -> Vec3 {
         loop {
             let v = Vec3::random_range(-1.0, 1.0);
@@ -73,6 +75,33 @@ impl Vec3 {
             return v;
         }
     }
+
+   pub fn random_in_unit_vector() -> Vec3 {
+        let mut rng = rand::thread_rng();
+
+        let a = rng.gen_range(0.0, 2.0*PI);
+        let z = rng.gen_range(-1.0, 1.0);
+        let r = f64::sqrt(1.0-z*z);
+
+        return  Vec3 {
+            x: r* a.cos(),
+            y: r* a.sin(),
+            z: z,
+        }
+    }
+
+
+   pub fn random_in_hemisphere(normal: Vec3) -> Vec3 {
+        let in_unit_sphere = Vec3::random_in_unit_sphere();
+        if  in_unit_sphere.dot(normal)  > 0.0 {
+            return in_unit_sphere;
+        } else {
+            return -in_unit_sphere;
+        }
+    }
+
+
+
 
 
 } // end of impl for Vec3

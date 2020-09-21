@@ -19,7 +19,7 @@ const IMG_WIDTH:i32 = 400;
 const IMG_HEIGHT:i32 = (IMG_WIDTH as f64 / ASPECT_RATIO) as i32 ;
 
 // Anti-Aliasing + Recurse Bounce 
-const SAMPLES_PER_PIXEL: i32 = 8;
+const SAMPLES_PER_PIXEL: i32 = 80;
 const MAX_RAY_BOUNCE:u8 = 3;
 
 
@@ -33,7 +33,11 @@ fn ray_colour(r: Ray, world: &HittableList, depth:u8) -> Colour {
 
     if  hitrecord.is_some() {
         let hr = hitrecord.unwrap();
+        // Difuse methods
+        // let target: Point3 = hr.p  + hr.normal + Vec3::random_in_unit_sphere();
         let target: Point3 = hr.p  + hr.normal + Vec3::random_in_unit_sphere();
+        // let target: Point3 = hr.p  +  Vec3::random_in_hemisphere(hr.normal);
+
         // bounce ray off and calculate next hit
         return 0.5 * ray_colour(Ray::new(hr.p, target-hr.p), world, depth-1)
         // return 0.5 * (hr.normal + Colour{x:1.0,y:1.0,z:1.0})
