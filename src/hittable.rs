@@ -1,14 +1,19 @@
 use crate::vec3::*;
 use crate::ray::*;
-
+use crate::material::*;
+use std::rc::Rc;
+// std::sync::Arc
 
 // #[derive(Debug,Copy,Clone)]
-pub struct HitRecord{
+pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
+    pub mat_ptr: Rc<Material>,
     pub t: f64,
     pub front_face:bool,
 }
+
+
 
 impl HitRecord {
 

@@ -1,17 +1,23 @@
+
+use std::rc::Rc;
+
+
 pub mod vec3;
 pub mod ray;
 pub mod sphere;
 pub mod hittable;
 pub mod camera;
+pub mod material;
 
 use vec3::*;
 use ray::*;
 use hittable::*;
 use sphere::*;
+use material::*;
+
 
 use camera::*;
 use rand::prelude::*;
-
 
 // Image + Camera Stuff
 const ASPECT_RATIO:f64 = 16.0 / 9.0;
@@ -20,7 +26,7 @@ const IMG_HEIGHT:i32 = (IMG_WIDTH as f64 / ASPECT_RATIO) as i32 ;
 
 // Anti-Aliasing + Recurse Bounce 
 const SAMPLES_PER_PIXEL: i32 = 80;
-const MAX_RAY_BOUNCE:u8 = 3;
+const MAX_RAY_BOUNCE:u8 = 10;
 
 
 fn ray_colour(r: Ray, world: &HittableList, depth:u8) -> Colour {
@@ -33,14 +39,14 @@ fn ray_colour(r: Ray, world: &HittableList, depth:u8) -> Colour {
 
     if  hitrecord.is_some() {
         let hr = hitrecord.unwrap();
-        // Difuse methods
-        // let target: Point3 = hr.p  + hr.normal + Vec3::random_in_unit_sphere();
-        let target: Point3 = hr.p  + hr.normal + Vec3::random_in_unit_sphere();
-        // let target: Point3 = hr.p  +  Vec3::random_in_hemisphere(hr.normal);
 
-        // bounce ray off and calculate next hit
-        return 0.5 * ray_colour(Ray::new(hr.p, target-hr.p), world, depth-1)
-        // return 0.5 * (hr.normal + Colour{x:1.0,y:1.0,z:1.0})
+        let opt_scatter_attenuation = hr.mat_ptr.scatter(&r, &hr);
+
+        match opt_scatter_attenuation {
+            Some((ray,attenuation)) =>{ return attenuation*ray_colour(ray, world, depth-1)}
+            None =>{ return Colour{x:0.0,y:0.0,z:0.0}}
+        }
+
     }
 
     let unit_direction = r.dir.unit_vector();
@@ -52,11 +58,25 @@ fn ray_colour(r: Ray, world: &HittableList, depth:u8) -> Colour {
 
 
 fn main() {
+    eprintln!("Starting Ray Tracing: W{}xH{}",IMG_WIDTH,IMG_HEIGHT);
 
-    // World 
+    // Materials
+    let mat_ground: Rc<Lambertian> = Rc::new(Lambertian{ albedo:Colour{x:0.8,y:0.8,z:0.0} });
+    let mat_center: Rc<Lambertian> = Rc::new(Lambertian{ albedo:Colour{x:0.7,y:0.3,z:0.3} });
+    let mat_left  : Rc<Metal>      = Rc::new(Metal     { albedo:Colour{x:0.8,y:0.8,z:0.8} });
+    let mat_right : Rc<Metal>      = Rc::new(Metal     { albedo:Colour{x:0.8,y:0.6,z:0.2} });
+    
+    
+    
+    // World
     let mut world: HittableList = HittableList::new();
-    world.add(Box::new(Sphere{center: Point3{x:0.0,y:0.0,z:-1.0}   ,radius: 0.5}));
-    world.add(Box::new(Sphere{center: Point3{x:0.0,y:-100.5,z:-1.0},radius: 100.0}));
+    world.add(Box::new(Sphere{center: Point3{x: 0.0,y:-100.5,z:-1.0},radius: 100.0, mat_ptr:mat_ground}));
+    world.add(Box::new(Sphere{center: Point3{x: 0.0,y:0.5,z:-1.0}   ,radius: 0.5, mat_ptr:mat_center}));
+    world.add(Box::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: 0.5, mat_ptr:mat_left}));
+    world.add(Box::new(Sphere{center: Point3{x: 1.0,y:0.0,z:-1.0}   ,radius: 0.5, mat_ptr:mat_right}));
+
+
+
 
     // Camera
     let cam = Camera::new(ASPECT_RATIO);

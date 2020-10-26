@@ -2,11 +2,13 @@ use crate::vec3::*;
 use crate::ray::*;
 use crate::hittable::*;
 use crate::hittable::Hittable;
+use crate::material::Material;
+use std::rc::Rc;
 
-
-pub struct Sphere{
+pub struct Sphere  {
     pub center: Point3,
-    pub radius: f64
+    pub radius: f64,
+    pub mat_ptr: Rc<Material>,
 }
 
 type IsFrontFace = bool;
@@ -44,7 +46,8 @@ impl Hittable for Sphere {
                 let hr = HitRecord{ 
                     p: ray.clone().at(temp), 
                     normal: norm, 
-                    t: temp, 
+                    t: temp,
+                    mat_ptr: self.mat_ptr.clone(),
                     front_face:ff
                 };
                 return Some(hr);
@@ -59,6 +62,7 @@ impl Hittable for Sphere {
                 let hr = HitRecord{ 
                     p: ray.clone().at(temp), 
                     normal: norm, 
+                    mat_ptr: self.mat_ptr.clone(),
                     t: temp, 
                     front_face:ff
                 };
