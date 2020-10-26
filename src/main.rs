@@ -63,8 +63,8 @@ fn main() {
     // Materials
     let mat_ground: Rc<Lambertian> = Rc::new(Lambertian{ albedo:Colour{x:0.8,y:0.8,z:0.0} });
     let mat_center: Rc<Lambertian> = Rc::new(Lambertian{ albedo:Colour{x:0.7,y:0.3,z:0.3} });
-    let mat_left  : Rc<Metal>      = Rc::new(Metal     { albedo:Colour{x:0.8,y:0.8,z:0.8} });
-    let mat_right : Rc<Metal>      = Rc::new(Metal     { albedo:Colour{x:0.8,y:0.6,z:0.2} });
+    let mat_left  : Rc<Metal>      = Rc::new(Metal     { albedo:Colour{x:0.8,y:0.8,z:0.8}, fuzz: 0.2 });
+    let mat_right : Rc<Metal>      = Rc::new(Metal     { albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 1.0 });
     
     
     

@@ -29,13 +29,14 @@ fn reflect( v : Vec3, n : Vec3  ) -> Vec3 {
     return  v - 2.0*v.dot(n)*n;
 }
 pub struct Metal {
-    pub albedo: Colour
+    pub albedo: Colour,
+    pub fuzz  : f64,   
 }
 
 impl Material for Metal {
     fn scatter(&self, ray_in : &Ray, hit_record: &HitRecord) -> Option<(Ray,Colour)> {
         let reflected  = reflect(Vec3::unit_vector(ray_in.dir),hit_record.normal);
-        let ray =  Ray::new(hit_record.p, reflected);
+        let ray =  Ray::new(hit_record.p, reflected+ self.fuzz*Vec3::random_in_unit_sphere());
         return Some((ray,self.albedo))
     }
 }
