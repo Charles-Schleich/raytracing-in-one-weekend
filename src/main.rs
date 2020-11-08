@@ -26,7 +26,7 @@ const IMG_HEIGHT:i32 = (IMG_WIDTH as f64 / ASPECT_RATIO) as i32 ;
 
 // Anti-Aliasing + Recurse Bounce 
 const SAMPLES_PER_PIXEL: i32 = 80;
-const MAX_RAY_BOUNCE:u8 = 10;
+const MAX_RAY_BOUNCE:u8 = 5;
 
 
 fn ray_colour(r: Ray, world: &HittableList, depth:u8) -> Colour {
@@ -62,21 +62,18 @@ fn main() {
 
     // Materials
     let mat_ground: Rc<Lambertian> = Rc::new(Lambertian{ albedo:Colour{x:0.8,y:0.8,z:0.0} });
-    let mat_center: Rc<Lambertian> = Rc::new(Lambertian{ albedo:Colour{x:0.7,y:0.3,z:0.3} });
-    let mat_left  : Rc<Metal>      = Rc::new(Metal     { albedo:Colour{x:0.8,y:0.8,z:0.8}, fuzz: 0.2 });
+    // let mat_center: Rc<Lambertian> = Rc::new(Lambertian{ albedo:Colour{x:0.7,y:0.3,z:0.3} });
+    let mat_center: Rc<Dielectric> = Rc::new(Dielectric{ ir: 1.5 });
+    let mat_left  : Rc<Dielectric> = Rc::new(Dielectric{ ir: 1.5 });
     let mat_right : Rc<Metal>      = Rc::new(Metal     { albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 1.0 });
-    
-    
-    
+
+
     // World
     let mut world: HittableList = HittableList::new();
     world.add(Box::new(Sphere{center: Point3{x: 0.0,y:-100.5,z:-1.0},radius: 100.0, mat_ptr:mat_ground}));
-    world.add(Box::new(Sphere{center: Point3{x: 0.0,y:0.5,z:-1.0}   ,radius: 0.5, mat_ptr:mat_center}));
+    world.add(Box::new(Sphere{center: Point3{x: 0.0,y:0.0,z:-1.0}   ,radius: 0.5, mat_ptr:mat_center}));
     world.add(Box::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: 0.5, mat_ptr:mat_left}));
     world.add(Box::new(Sphere{center: Point3{x: 1.0,y:0.0,z:-1.0}   ,radius: 0.5, mat_ptr:mat_right}));
-
-
-
 
     // Camera
     let cam = Camera::new(ASPECT_RATIO);
@@ -92,7 +89,7 @@ fn main() {
 
             let mut pixel_colour: Colour = Colour::new();
 
-            for _ in 1..SAMPLES_PER_PIXEL{
+            for _ in 1..SAMPLES_PER_PIXEL {
                 let u = (col as f64 + rng.gen::<f64>() ) / (IMG_WIDTH) as f64;
                 let v = (row as f64 + rng.gen::<f64>() ) / (IMG_HEIGHT) as f64;
 

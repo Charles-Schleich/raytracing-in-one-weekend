@@ -24,7 +24,7 @@ impl Material for Lambertian {
 }
 
 
-
+//  Metalic
 fn reflect( v : Vec3, n : Vec3  ) -> Vec3 {
     return  v - 2.0*v.dot(n)*n;
 }
@@ -40,3 +40,35 @@ impl Material for Metal {
         return Some((ray,self.albedo))
     }
 }
+
+
+//  Dielectric
+pub struct Dielectric {
+    pub ir:f64
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, ray_in : &Ray, hit_record: &HitRecord) -> Option<(Ray,Colour)> {
+        // eprintln!("Hit Dielectric");
+        // Is this coming into or out of the di-electric ?
+        // Dielectric of Air is 1.0
+        let refraction_ratio = match hit_record.front_face{
+            true  => { 1.0/self.ir }
+            false => { self.ir     }
+        };
+
+        let unit_direction = unit_vector(ray_in.dir);
+
+        let refracted = Vec3::refract(unit_direction,hit_record.normal,refraction_ratio);
+
+        let refracted_ray= Ray::new(hit_record.p , refracted);
+
+        // I.e. no attention todo: add code to make di-electric a coloured sphere i.e. rose tinted
+        let attenuation = Vec3{ x:1.0, y:1.0, z:1.0};  
+
+        return Some((refracted_ray,attenuation));
+
+    }
+}
+
+
