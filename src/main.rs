@@ -1,6 +1,6 @@
 
 use std::rc::Rc;
-
+use num_cpus;
 
 pub mod vec3;
 pub mod ray;
@@ -56,6 +56,12 @@ fn ray_colour(r: Ray, world: &HittableList, depth:u8) -> Colour {
     return sky;
 }
 
+#[derive(Debug)]
+struct ThreadBounds {
+    thread: i32,
+    start: i32,
+    end: i32,
+}
 
 fn main() {
     eprintln!("Starting Ray Tracing: W{}xH{}",IMG_WIDTH,IMG_HEIGHT);
@@ -81,11 +87,46 @@ fn main() {
 
     eprintln!("{}",cam.lower_left_corner);
     // Render
+
+    // Split up work 
+    let mut size = 0;
+    let cpus = num_cpus::get() as i32;
+    let split = IMG_HEIGHT / cpus;
+    let mut pairs: Vec<ThreadBounds> = Vec::new();
+
+    for thread in 0..cpus{
+        let s = thread*split;
+        let e;
+        if thread == cpus-1 {
+            e = IMG_HEIGHT;
+        } else {
+            e = (thread+1)*split; 
+        }
+        let tb  = ThreadBounds{thread:thread, start:s,end:e};
+        pairs.push(tb);
+    }
+
+    eprintln!("{:?}",pairs);
+
+
+    // let mut joinhandles = Vec::new();
+    // for thread_num in pairs.into_iter() {
+
+    //     let filename_clone = filename.clone();
+
+    //     let handler = thread::spawn(move || thread_process_logs(&thread_num, filename_clone));
+    //     joinhandles.push(handler);
+    // }
+
+    // size 
+    eprintln!("size {} {} {}",IMG_HEIGHT, size, num_cpus::get());
+
+
     print!("P3\n{} {}\n255\n", IMG_WIDTH, IMG_HEIGHT);
     //
     for row in (0..IMG_HEIGHT).rev() {
         // eprintln!("Lines Remaining {}", row);
-        for col in 0..IMG_WIDTH {
+        for col in 0..IMG_WIDTH { 
 
             let mut pixel_colour: Colour = Colour::new();
 
