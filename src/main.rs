@@ -1,6 +1,8 @@
 
 use std::rc::Rc;
 use num_cpus;
+use std::thread;
+use std::sync::Arc;
 
 pub mod vec3;
 pub mod ray;
@@ -63,29 +65,58 @@ struct ThreadBounds {
     end: i32,
 }
 
+
+// fn process_image_chunk (tb:ThreadBounds, cam:Arc<Camera>, world: Arc<HittableList>) -> Vec<Colour>{
+fn process_image_chunk (tb:ThreadBounds, cam:Arc<Camera>, world: Arc<HittableList>) -> Vec<Colour>{
+
+    let mut values:Vec<Colour> = Vec::new();
+    let mut rng = rand::thread_rng();
+
+    for row in (tb.start .. tb.end).rev() {
+            // eprintln!("Lines Remaining {}", row);
+            for col in 0..IMG_WIDTH { 
+
+                let mut pixel_colour: Colour = Colour::new();
+
+                for _ in 1..SAMPLES_PER_PIXEL {
+                    let u = (col as f64 + rng.gen::<f64>() ) / (IMG_WIDTH) as f64;
+                    let v = (row as f64 + rng.gen::<f64>() ) / (IMG_HEIGHT) as f64;
+
+                    let ray= cam.getray(u, v);
+                    pixel_colour = pixel_colour+ray_colour(ray,&world,MAX_RAY_BOUNCE); 
+                }
+                values.push(pixel_colour);
+            }
+        }
+    values
+}
+
+
+
 fn main() {
     eprintln!("Starting Ray Tracing: W{}xH{}",IMG_WIDTH,IMG_HEIGHT);
 
     // Materials
-    let mat_ground: Rc<Lambertian> = Rc::new(Lambertian{ albedo:Colour{x:0.8,y:0.8,z:0.0} });
-    // let mat_center: Rc<Lambertian> = Rc::new(Lambertian{ albedo:Colour{x:0.7,y:0.3,z:0.3} });
-    let mat_center: Rc<Dielectric> = Rc::new(Dielectric{ ir: 1.5 });
-    let mat_left  : Rc<Dielectric> = Rc::new(Dielectric{ ir: 1.5 });
-    let mat_right : Rc<Metal>      = Rc::new(Metal     { albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 1.0 });
+    let mat_ground = Arc::new(Lambertian{ albedo:Colour{x:0.8,y:0.8,z:0.0} });
+    // let mat_center: Arc<Lambertian> = Arc::new(Lambertian{ albedo:Colour{x:0.7,y:0.3,z:0.3} });
+    let mat_center = Arc::new(Dielectric{ ir: 1.5 });
+    let mat_left   = Arc::new(Dielectric{ ir: 1.5 });
+    let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 1.0 });
 
 
     // World
     let mut world: HittableList = HittableList::new();
-    world.add(Box::new(Sphere{center: Point3{x: 0.0,y:-100.5,z:-1.0},radius: 100.0, mat_ptr:mat_ground}));
-    world.add(Box::new(Sphere{center: Point3{x: 0.0,y:0.0,z:-1.0}   ,radius: 0.5, mat_ptr:mat_center}));
-    world.add(Box::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: 0.5, mat_ptr:mat_left}));
-    world.add(Box::new(Sphere{center: Point3{x: 1.0,y:0.0,z:-1.0}   ,radius: 0.5, mat_ptr:mat_right}));
+    world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:-100.5,z:-1.0},radius: 100.0, mat_ptr:mat_ground}));
+    world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_center}));
+    world.add(Arc::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_left}));
+    world.add(Arc::new(Sphere{center: Point3{x: 1.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_right}));
 
+    let world_arc = Arc::new(world);
     // Camera
-    let cam = Camera::new(ASPECT_RATIO);
-    let mut rng = rand::thread_rng();
+    let cam = Arc::new(Camera::new(ASPECT_RATIO));
 
     eprintln!("{}",cam.lower_left_corner);
+
     // Render
 
     // Split up work 
@@ -108,37 +139,46 @@ fn main() {
 
     eprintln!("{:?}",pairs);
 
+    let mut joinhandles = Vec::new();
+    for thread in pairs.into_iter() {
+        let w_arc_clone = world_arc.clone();
+        let cam_clone = cam.clone();
+        let handler = thread::spawn(move || process_image_chunk(thread, cam_clone, w_arc_clone));
 
-    // let mut joinhandles = Vec::new();
-    // for thread_num in pairs.into_iter() {
-
-    //     let filename_clone = filename.clone();
-
-    //     let handler = thread::spawn(move || thread_process_logs(&thread_num, filename_clone));
-    //     joinhandles.push(handler);
-    // }
+        joinhandles.push(handler);
+        // joinhandles
+    }
 
     // size 
     eprintln!("size {} {} {}",IMG_HEIGHT, size, num_cpus::get());
-
-
     print!("P3\n{} {}\n255\n", IMG_WIDTH, IMG_HEIGHT);
-    //
-    for row in (0..IMG_HEIGHT).rev() {
-        // eprintln!("Lines Remaining {}", row);
-        for col in 0..IMG_WIDTH { 
+    joinhandles.reverse();
 
-            let mut pixel_colour: Colour = Colour::new();
-
-            for _ in 1..SAMPLES_PER_PIXEL {
-                let u = (col as f64 + rng.gen::<f64>() ) / (IMG_WIDTH) as f64;
-                let v = (row as f64 + rng.gen::<f64>() ) / (IMG_HEIGHT) as f64;
-
-                let ray= cam.getray(u, v);
-                pixel_colour = pixel_colour+ray_colour(ray,&world,MAX_RAY_BOUNCE); 
-            }
-
+    for jh in joinhandles {
+        let pixel_colours= jh.join().unwrap();
+        for pixel_colour in pixel_colours{
             pixel_colour.write_colour(SAMPLES_PER_PIXEL);
         }
+        // pixel_colours.iter().map(|pixel_colour| pixel_colour.write_colour(SAMPLES_PER_PIXEL));
+        // eprintln!("{:?}",pixel_colours);
     }
+
+    //
+    // for row in (0..IMG_HEIGHT).rev() {
+    //     // eprintln!("Lines Remaining {}", row);
+    //     for col in 0..IMG_WIDTH { 
+
+    //         let mut pixel_colour: Colour = Colour::new();
+
+    //         for _ in 1..SAMPLES_PER_PIXEL {
+    //             let u = (col as f64 + rng.gen::<f64>() ) / (IMG_WIDTH) as f64;
+    //             let v = (row as f64 + rng.gen::<f64>() ) / (IMG_HEIGHT) as f64;
+
+    //             let ray= cam.getray(u, v);
+    //             pixel_colour = pixel_colour+ray_colour(ray,&world,MAX_RAY_BOUNCE); 
+    //         }
+
+            // pixel_colour.write_colour(SAMPLES_PER_PIXEL);
+    //     }
+    // }
 }
