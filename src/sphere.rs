@@ -3,12 +3,15 @@ use crate::ray::*;
 use crate::hittable::*;
 use crate::hittable::Hittable;
 use crate::material::Material;
-use std::rc::Rc;
+// use std::rc::Rc;
+use std::sync::Arc;
+
+
 
 pub struct Sphere  {
     pub center: Point3,
     pub radius: f64,
-    pub mat_ptr: Rc<Material>,
+    pub mat_ptr: Arc<Material>,
 }
 
 type IsFrontFace = bool;
