@@ -20,6 +20,8 @@ use material::*;
 
 use camera::*;
 use rand::prelude::*;
+use rayon::prelude::*;
+
 
 // Image + Camera Stuff
 const ASPECT_RATIO:f64 = 16.0 / 9.0;
@@ -67,27 +69,23 @@ struct ThreadBounds {
 
 
 // fn process_image_chunk (tb:ThreadBounds, cam:Arc<Camera>, world: Arc<HittableList>) -> Vec<Colour>{
-fn process_image_chunk (tb:ThreadBounds, cam:Arc<Camera>, world: Arc<HittableList>) -> Vec<Colour>{
+fn process_line (row:f64, cam:Arc<Camera>, world: Arc<HittableList>) -> Vec<Colour> {
 
     let mut values:Vec<Colour> = Vec::new();
     let mut rng = rand::thread_rng();
 
-    for row in (tb.start .. tb.end).rev() {
-            // eprintln!("Lines Remaining {}", row);
-            for col in 0..IMG_WIDTH { 
+    for col in 0..IMG_WIDTH { 
+        let mut pixel_colour: Colour = Colour::new();
 
-                let mut pixel_colour: Colour = Colour::new();
+        for _ in 1..SAMPLES_PER_PIXEL {
+            let u = (col as f64 + rng.gen::<f64>() ) / (IMG_WIDTH) as f64;
+            let v = (row as f64 + rng.gen::<f64>() ) / (IMG_HEIGHT) as f64;
 
-                for _ in 1..SAMPLES_PER_PIXEL {
-                    let u = (col as f64 + rng.gen::<f64>() ) / (IMG_WIDTH) as f64;
-                    let v = (row as f64 + rng.gen::<f64>() ) / (IMG_HEIGHT) as f64;
-
-                    let ray= cam.getray(u, v);
-                    pixel_colour = pixel_colour+ray_colour(ray,&world,MAX_RAY_BOUNCE); 
-                }
-                values.push(pixel_colour);
-            }
+            let ray= cam.getray(u, v);
+            pixel_colour = pixel_colour+ray_colour(ray,&world,MAX_RAY_BOUNCE); 
         }
+        values.push(pixel_colour);
+    }
     values
 }
 
@@ -101,7 +99,8 @@ fn main() {
     // let mat_center: Arc<Lambertian> = Arc::new(Lambertian{ albedo:Colour{x:0.7,y:0.3,z:0.3} });
     let mat_center = Arc::new(Dielectric{ ir: 1.5 });
     let mat_left   = Arc::new(Dielectric{ ir: 1.5 });
-    let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 1.0 });
+    let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.1,y:0.1,z:0.7}, fuzz: 1.0 });
+    // let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 1.0 });
 
 
     // World
@@ -120,48 +119,29 @@ fn main() {
     // Render
 
     // Split up work 
-    let mut size = 0;
-    let cpus = num_cpus::get() as i32;
-    let split = IMG_HEIGHT / cpus;
-    let mut pairs: Vec<ThreadBounds> = Vec::new();
-
-    for thread in 0..cpus{
-        let s = thread*split;
-        let e;
-        if thread == cpus-1 {
-            e = IMG_HEIGHT;
-        } else {
-            e = (thread+1)*split; 
-        }
-        let tb  = ThreadBounds{thread:thread, start:s,end:e};
-        pairs.push(tb);
-    }
-
-    eprintln!("{:?}",pairs);
-
-    let mut joinhandles = Vec::new();
-    for thread in pairs.into_iter() {
-        let w_arc_clone = world_arc.clone();
-        let cam_clone = cam.clone();
-        let handler = thread::spawn(move || process_image_chunk(thread, cam_clone, w_arc_clone));
-
-        joinhandles.push(handler);
-        // joinhandles
-    }
+    
 
     // size 
-    eprintln!("size {} {} {}",IMG_HEIGHT, size, num_cpus::get());
+    eprintln!("size {} {}",IMG_HEIGHT, num_cpus::get());
     print!("P3\n{} {}\n255\n", IMG_WIDTH, IMG_HEIGHT);
-    joinhandles.reverse();
+    let rows = (0..IMG_HEIGHT);
 
-    for jh in joinhandles {
-        let pixel_colours= jh.join().unwrap();
-        for pixel_colour in pixel_colours{
-            pixel_colour.write_colour(SAMPLES_PER_PIXEL);
-        }
-        // pixel_colours.iter().map(|pixel_colour| pixel_colour.write_colour(SAMPLES_PER_PIXEL));
-        // eprintln!("{:?}",pixel_colours);
+
+    let output: Vec<Colour> = rows
+        .into_par_iter()
+        .rev()
+        .flat_map(|x|{
+            let cam_cl= cam.clone();
+            let world_arc_cl= world_arc.clone();
+            process_line(x as f64,cam_cl,world_arc_cl)
+        })
+        .collect();
+
+    for pixel_colour in output{
+        pixel_colour.write_colour(SAMPLES_PER_PIXEL);
     }
+
+    // process_line
 
     //
     // for row in (0..IMG_HEIGHT).rev() {
