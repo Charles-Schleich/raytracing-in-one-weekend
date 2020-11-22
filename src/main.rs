@@ -108,26 +108,26 @@ fn main() {
     world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:-100.5,z:-1.0},radius: 100.0, mat_ptr:mat_ground}));
     world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_center}));
     world.add(Arc::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_left.clone()}));
-    world.add(Arc::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: -0.4,  mat_ptr:mat_left}));
+    world.add(Arc::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: -0.45, mat_ptr:mat_left}));
     world.add(Arc::new(Sphere{center: Point3{x: 1.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_right}));
 
     let world_arc = Arc::new(world);
     // Camera
-    let cam = Arc::new(Camera::new(ASPECT_RATIO));
+    let lookfrom = Point3 { x:-2.0, y:2.0, z: 1.0};
+    let lookat   = Point3 { x:0.0,  y:0.0, z:-1.0};
+    let vup      = Point3 { x:0.0,  y:1.0, z: 0.0};
+
+    // point3(-2,2,1), point3(0,0,-1)
+    let cam = Arc::new(Camera::new(lookfrom,lookat,vup, 90.0,ASPECT_RATIO));
 
     eprintln!("{}",cam.lower_left_corner);
 
-    // Render
-
-    // Split up work 
-    
-
-    // size 
+    // Size 
     eprintln!("size {} {}",IMG_HEIGHT, num_cpus::get());
     print!("P3\n{} {}\n255\n", IMG_WIDTH, IMG_HEIGHT);
     let rows = (0..IMG_HEIGHT);
 
-
+    // Rayon splitting up the work to a couple cores. 
     let output: Vec<Colour> = rows
         .into_par_iter()
         .rev()
