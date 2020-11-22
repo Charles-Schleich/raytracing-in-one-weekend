@@ -30,7 +30,7 @@ const IMG_HEIGHT:i32 = (IMG_WIDTH as f64 / ASPECT_RATIO) as i32 ;
 
 // Anti-Aliasing + Recurse Bounce 
 const SAMPLES_PER_PIXEL: i32 = 80;
-const MAX_RAY_BOUNCE:u8 = 5;
+const MAX_RAY_BOUNCE:u8 = 20;
 
 
 fn ray_colour(r: Ray, world: &HittableList, depth:u8) -> Colour {
@@ -107,7 +107,8 @@ fn main() {
     let mut world: HittableList = HittableList::new();
     world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:-100.5,z:-1.0},radius: 100.0, mat_ptr:mat_ground}));
     world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_center}));
-    world.add(Arc::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_left}));
+    world.add(Arc::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_left.clone()}));
+    world.add(Arc::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: -0.4,  mat_ptr:mat_left}));
     world.add(Arc::new(Sphere{center: Point3{x: 1.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_right}));
 
     let world_arc = Arc::new(world);
