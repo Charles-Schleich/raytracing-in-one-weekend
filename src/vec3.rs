@@ -108,6 +108,12 @@ impl Vec3 {
         return r_out_perp + r_out_parallel;
     }
 
+    pub fn reflect( v : Vec3, n : Vec3  ) -> Vec3 {
+        return  v - 2.0*v.dot(n)*n;
+    }
+
+
+
 } // end of impl for Vec3
 
 

@@ -96,10 +96,10 @@ fn main() {
 
     // Materials
     let mat_ground = Arc::new(Lambertian{ albedo:Colour{x:0.8,y:0.8,z:0.0} });
-    // let mat_center: Arc<Lambertian> = Arc::new(Lambertian{ albedo:Colour{x:0.7,y:0.3,z:0.3} });
-    let mat_center = Arc::new(Dielectric{ ir: 1.5 });
+    // let mat_center = Arc::new(Dielectric{ ir: 1.5 });
+    let mat_center: Arc<Lambertian> = Arc::new(Lambertian{ albedo:Colour{x:0.1,y:0.2,z:0.5} });
     let mat_left   = Arc::new(Dielectric{ ir: 1.5 });
-    let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.1,y:0.1,z:0.7}, fuzz: 1.0 });
+    let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 0.0 });
     // let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 1.0 });
 
 
