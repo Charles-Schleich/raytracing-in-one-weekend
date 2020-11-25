@@ -100,30 +100,59 @@ fn random_scene() -> Arc<HittableList> {
     let mat_ground = Arc::new(Lambertian{ albedo:Colour{x:0.5,y:0.5,z:0.5} });
     world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:-1000.0,z:0.0},radius: 1000.0, mat_ptr:mat_ground}));
 
-    // rng.gen::<f64>()
+    let mut rng = rand::thread_rng();
+
     for x in -11..11{
-        for y in -11..11{
+        for z in -11..11{
+            let choose_mat = rng.gen::<f64>();
+            let center = Point3{ x : x as f64 + 0.9*rng.gen::<f64>() 
+                                    , y : 0.2
+                                    , z : z as f64 + 0.9*rng.gen::<f64>()
+                                    };
+
+
+            if (center - Point3{x:4.0, y:0.2, z:0.0}).len() > 0.9 {
+
+                let material:Arc<Material>;
+
+                if choose_mat < 0.6 {
+                    // diffuse
+                    let albedo = Colour::random() * Colour::random();
+                    material = Arc::new(Lambertian{ albedo:albedo });
+                    world.add(Arc::new(Sphere{ center: center, radius: 0.2, mat_ptr:material}));
+                      
+                } else if choose_mat < 0.8 {
+                    // metal
+                    let albedo = Colour::random() * Colour::random();
+                    let fuzz = rng.gen_range(0.0, 0.2);
+                    material =  Arc::new(Metal{ albedo:albedo, fuzz: fuzz });
+                    world.add(Arc::new(Sphere{ center: center, radius: 0.2, mat_ptr:material}));
+                } else {
+                    // glass
+                    let material   = Arc::new(Dielectric{ ir: 1.5 });
+                    world.add(Arc::new(Sphere{ center: center, radius: 0.2, mat_ptr:material}));
+                }
+            }
             // auto choose_mat = random_double();
             // point3 center(a + 0.9*random_double(), 0.2, b + 0.9*random_double());
 
         }
     }
+    // world.add(Arc::new((point3(0, 1, 0), 1.0, material1));
+    let material1   = Arc::new(Dielectric{ ir: 1.5 });
+    world.add(Arc::new(Sphere{ center: Point3{x:0.0,y:1.0,z:0.0}, radius: 1.0, mat_ptr:material1}));
+
+    let material2 = Arc::new(Lambertian{ albedo:Colour{x:0.4,y:0.2,z:0.1}  });
+    world.add(Arc::new(Sphere{ center: Point3{x:-4.0,y:1.0,z:0.0}, radius: 1.0, mat_ptr:material2}));
 
 
-    // // let mat_center = Arc::new(Dielectric{ ir: 1.5 });
-    // let mat_center: Arc<Lambertian> = Arc::new(Lambertian{ albedo:Colour{x:0.1,y:0.2,z:0.5} });
-    // let mat_left   = Arc::new(Dielectric{ ir: 1.5 });
-    // let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 0.0 });
-    // // let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 1.0 });
+    let material3 = Arc::new(Metal{ albedo:Colour{x:0.7,y:0.6,z:0.5}, fuzz:0.0  });
+    world.add(Arc::new(Sphere{ center: Point3{x:4.0,y:1.0,z:0.0}, radius: 1.0, mat_ptr:material3}));
 
+    // auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
+    // world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
 
-    // // World
-    // let mut world: HittableList = HittableList::new();
-    // world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:-100.5,z:-1.0},radius: 100.0, mat_ptr:mat_ground}));
-
-
-
-    
+    // return world;
     Arc::new(world)
 }
 
@@ -134,31 +163,28 @@ fn main() {
     eprintln!("Starting Ray Tracing: W{}xH{}",IMG_WIDTH,IMG_HEIGHT);
 
     // Materials
-    let mat_ground = Arc::new(Lambertian{ albedo:Colour{x:0.8,y:0.8,z:0.0} });
-    // let mat_center = Arc::new(Dielectric{ ir: 1.5 });
-    let mat_center: Arc<Lambertian> = Arc::new(Lambertian{ albedo:Colour{x:0.1,y:0.2,z:0.5} });
-    let mat_left   = Arc::new(Dielectric{ ir: 1.5 });
-    let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 0.0 });
-    // let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 1.0 });
+    // let mat_ground = Arc::new(Lambertian{ albedo:Colour{x:0.8,y:0.8,z:0.0} });
+    // let mat_center: Arc<Lambertian> = Arc::new(Lambertian{ albedo:Colour{x:0.1,y:0.2,z:0.5} });
+    // let mat_left   = Arc::new(Dielectric{ ir: 1.5 });
+    // let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 0.0 });
 
+    // // World
+    // let mut world: HittableList = HittableList::new();
+    // world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:-100.5,z:-1.0},radius: 100.0, mat_ptr:mat_ground}));
+    // world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_center}));
+    // world.add(Arc::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_left.clone()}));
+    // world.add(Arc::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: -0.45, mat_ptr:mat_left}));
+    // world.add(Arc::new(Sphere{center: Point3{x: 1.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_right}));
 
-    // World
-    let mut world: HittableList = HittableList::new();
-    world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:-100.5,z:-1.0},radius: 100.0, mat_ptr:mat_ground}));
-    world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_center}));
-    world.add(Arc::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_left.clone()}));
-    world.add(Arc::new(Sphere{center: Point3{x:-1.0,y:0.0,z:-1.0}   ,radius: -0.45, mat_ptr:mat_left}));
-    world.add(Arc::new(Sphere{center: Point3{x: 1.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_right}));
-
-    let world_arc = Arc::new(world);
-
+    // let world_arc = Arc::new(world);
+    let world_arc = random_scene();
 
     // Camera
-    let lookfrom = Point3 { x:3.0,  y:3.0, z: 2.0};
-    let lookat   = Point3 { x:0.0,  y:0.0, z:-1.0};
+    let lookfrom = Point3 { x:13.0, y:2.0, z: 2.0};
+    let lookat   = Point3 { x:0.0,  y:0.0, z: 0.0};
     let vup      = Point3 { x:0.0,  y:1.0, z: 0.0};
-    let dist_to_focus =  (lookfrom-lookat).len();
-    let aperture  =  2.0;
+    let dist_to_focus =  10.0;
+    let aperture  =  0.1;
 
     // point3(-2,2,1), point3(0,0,-1)
     let cam = Arc::new(Camera::new(lookfrom,lookat,vup, 20.0,ASPECT_RATIO,aperture,dist_to_focus));
