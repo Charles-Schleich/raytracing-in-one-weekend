@@ -90,6 +90,27 @@ impl Vec3 {
         }
     }
 
+    pub fn random_in_unit_disk() -> Vec3{
+        let mut rng = rand::thread_rng();
+        let mut vec= Vec3::new();
+        while(true){
+            vec = Vec3 { x:rng.gen_range(-1.0, 1.0)
+                                , y:rng.gen_range(-1.0, 1.0)
+                                , z:0.0,  
+                                };
+            if (vec.len_sqred() >=1.0){ continue }
+            break;
+        }
+        vec 
+    }
+
+    // vec3 random_in_unit_disk() {
+    //     while (true) {
+    //         auto p = vec3(random_double(-1,1), random_double(-1,1), 0);
+    //         if (p.length_squared() >= 1) continue;
+    //         return p;
+    //     }
+    // }
 
    pub fn random_in_hemisphere(normal: Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();

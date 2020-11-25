@@ -26,11 +26,13 @@ use rayon::prelude::*;
 // Image + Camera Stuff
 const ASPECT_RATIO:f64 = 16.0 / 9.0;
 const IMG_WIDTH:i32 = 400;
+// const IMG_WIDTH:i32 = 400;
 const IMG_HEIGHT:i32 = (IMG_WIDTH as f64 / ASPECT_RATIO) as i32 ;
 
 // Anti-Aliasing + Recurse Bounce 
 const SAMPLES_PER_PIXEL: i32 = 80;
-const MAX_RAY_BOUNCE:u8 = 20;
+// const SAMPLES_PER_PIXEL: i32 = 80;
+const MAX_RAY_BOUNCE:u8 = 10;
 
 
 fn ray_colour(r: Ray, world: &HittableList, depth:u8) -> Colour {
@@ -82,12 +84,49 @@ fn process_line (row:f64, cam:Arc<Camera>, world: Arc<HittableList>) -> Vec<Colo
             let v = (row as f64 + rng.gen::<f64>() ) / (IMG_HEIGHT) as f64;
 
             let ray= cam.getray(u, v);
-            pixel_colour = pixel_colour+ray_colour(ray,&world,MAX_RAY_BOUNCE); 
+            pixel_colour = pixel_colour+ray_colour(ray, &world,MAX_RAY_BOUNCE); 
         }
         values.push(pixel_colour);
     }
     values
 }
+
+
+
+
+fn random_scene() -> Arc<HittableList> {
+
+    let mut world: HittableList = HittableList::new();
+    let mat_ground = Arc::new(Lambertian{ albedo:Colour{x:0.5,y:0.5,z:0.5} });
+    world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:-1000.0,z:0.0},radius: 1000.0, mat_ptr:mat_ground}));
+
+    // rng.gen::<f64>()
+    for x in -11..11{
+        for y in -11..11{
+            // auto choose_mat = random_double();
+            // point3 center(a + 0.9*random_double(), 0.2, b + 0.9*random_double());
+
+        }
+    }
+
+
+    // // let mat_center = Arc::new(Dielectric{ ir: 1.5 });
+    // let mat_center: Arc<Lambertian> = Arc::new(Lambertian{ albedo:Colour{x:0.1,y:0.2,z:0.5} });
+    // let mat_left   = Arc::new(Dielectric{ ir: 1.5 });
+    // let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 0.0 });
+    // // let mat_right =  Arc::new(Metal{ albedo:Colour{x:0.8,y:0.6,z:0.2}, fuzz: 1.0 });
+
+
+    // // World
+    // let mut world: HittableList = HittableList::new();
+    // world.add(Arc::new(Sphere{center: Point3{x: 0.0,y:-100.5,z:-1.0},radius: 100.0, mat_ptr:mat_ground}));
+
+
+
+    
+    Arc::new(world)
+}
+
 
 
 
@@ -112,13 +151,19 @@ fn main() {
     world.add(Arc::new(Sphere{center: Point3{x: 1.0,y:0.0,z:-1.0}   ,radius: 0.5,   mat_ptr:mat_right}));
 
     let world_arc = Arc::new(world);
+
+
     // Camera
-    let lookfrom = Point3 { x:-2.0, y:2.0, z: 1.0};
+    let lookfrom = Point3 { x:3.0,  y:3.0, z: 2.0};
     let lookat   = Point3 { x:0.0,  y:0.0, z:-1.0};
     let vup      = Point3 { x:0.0,  y:1.0, z: 0.0};
+    let dist_to_focus =  (lookfrom-lookat).len();
+    let aperture  =  2.0;
 
     // point3(-2,2,1), point3(0,0,-1)
-    let cam = Arc::new(Camera::new(lookfrom,lookat,vup, 90.0,ASPECT_RATIO));
+    let cam = Arc::new(Camera::new(lookfrom,lookat,vup, 20.0,ASPECT_RATIO,aperture,dist_to_focus));
+
+
 
     eprintln!("{}",cam.lower_left_corner);
 
