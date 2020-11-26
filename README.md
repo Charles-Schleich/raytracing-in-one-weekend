@@ -16,7 +16,7 @@ Here is a link to it https://raytracing.github.io/books/RayTracingInOneWeekend.h
 
  <br  />
 
-It uses Rayon for Data-Parallelism, this gets pretty significant speed ups the higher the core count of your CPU was.
+It uses Rayon for Data-Parallelism, this gets pretty significant speed ups the higher the core count of your CPU.
 A Random Scene Rending at 4k, on an 8 Core CPU, with 500 Samples Per pixel, and a 50 bounce limit took about 176 minutes to render.
 
 I suppose my biggest regret is not doing this sooner.
