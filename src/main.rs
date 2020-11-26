@@ -72,6 +72,7 @@ struct ThreadBounds {
 
 // fn process_image_chunk (tb:ThreadBounds, cam:Arc<Camera>, world: Arc<HittableList>) -> Vec<Colour>{
 fn process_line (row:f64, cam:Arc<Camera>, world: Arc<HittableList>) -> Vec<Colour> {
+    eprintln!("Runing Row {}",row );
 
     let mut values:Vec<Colour> = Vec::new();
     let mut rng = rand::thread_rng();
