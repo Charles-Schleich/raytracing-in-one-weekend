@@ -17,6 +17,8 @@ use camera::*;
 //  External
 use num_cpus;
 use std::sync::Arc;
+use std::time::{Duration, Instant};
+use std::process::Command;
 
 use rand::prelude::*;
 use rayon::prelude::*;
@@ -26,7 +28,7 @@ use image::*;
 
 // Image + Camera Stuff
 const ASPECT_RATIO:f64 = 16.0 / 9.0;
-const IMG_WIDTH:u32 = 200;
+const IMG_WIDTH:u32 = 1920;
 // const IMG_WIDTH:i32 = 400;
 const IMG_HEIGHT:u32 = (IMG_WIDTH as f64 / ASPECT_RATIO) as u32 ;
 
@@ -222,9 +224,12 @@ fn main() {
         frame.push_str(".png");
         println!("{:?}",lookfrom);
 
+        let start = Instant::now();
 
-        render(cam, world_arc.clone(), frame);
-
+            render(cam, world_arc.clone(), frame);
+        let duration = start.elapsed();
+        println!("Frame Time: {:?}s ", duration.as_secs());
+        println!("----------------");
 
     }
 
