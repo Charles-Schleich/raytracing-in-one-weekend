@@ -31,7 +31,7 @@ const IMG_WIDTH:u32 = 200;
 const IMG_HEIGHT:u32 = (IMG_WIDTH as f64 / ASPECT_RATIO) as u32 ;
 
 // Anti-Aliasing + Recurse Bounce 
-const SAMPLES_PER_PIXEL: i32 = 80;
+const SAMPLES_PER_PIXEL: i32 = 10;
 // const SAMPLES_PER_PIXEL: i32 = 80;
 const MAX_RAY_BOUNCE:u8 = 10;
 
@@ -72,7 +72,7 @@ struct ThreadBounds {
 
 
 fn process_line (row:f64, cam:Arc<Camera>, world: Arc<HittableList>) -> Vec<Colour> {
-    eprintln!("Runing Row {}",row );
+    // eprintln!("Runing Row {}",row );
 
     let mut values:Vec<Colour> = Vec::new();
     let mut rng = rand::thread_rng();
@@ -116,13 +116,13 @@ fn random_scene() -> Arc<HittableList> {
 
                 let material:Arc<Material>;
 
-                if choose_mat < 0.6 {
+                if choose_mat < 0.4 {
                     // diffuse
                     let albedo = Colour::random() * Colour::random();
                     material = Arc::new(Lambertian{ albedo:albedo });
                     world.add(Arc::new(Sphere{ center: center, radius: 0.2, mat_ptr:material}));
                       
-                } else if choose_mat < 0.8 {
+                } else if choose_mat < 0.7 {
                     // metal
                     let albedo = Colour::random() * Colour::random();
                     let fuzz = rng.gen_range(0.0, 0.2);
@@ -143,7 +143,6 @@ fn random_scene() -> Arc<HittableList> {
     let material2 = Arc::new(Lambertian{ albedo:Colour{x:0.4,y:0.2,z:0.1}  });
     world.add(Arc::new(Sphere{ center: Point3{x:-4.0,y:1.0,z:0.0}, radius: 1.0, mat_ptr:material2}));
 
-
     let material3 = Arc::new(Metal{ albedo:Colour{x:0.7,y:0.6,z:0.5}, fuzz:0.0  });
     world.add(Arc::new(Sphere{ center: Point3{x:4.0,y:1.0,z:0.0}, radius: 1.0, mat_ptr:material3}));
 
@@ -152,14 +151,15 @@ fn random_scene() -> Arc<HittableList> {
 
 
 
-fn render(cam:Arc<Camera>, world_arc: Arc<HittableList>) {
+fn render(cam:Arc<Camera>, world_arc: Arc<HittableList>, frame:String) {
 
-    eprintln!("{}",cam.lower_left_corner);
+    // eprintln!("{}",cam.lower_left_corner);
+    println!("Rendering {}",frame);
 
     // Size 
-    eprintln!("size {} {}",IMG_HEIGHT, num_cpus::get());
-    print!("P3\n{} {}\n255\n", IMG_WIDTH, IMG_HEIGHT);
-    let rows = (0..IMG_HEIGHT);
+    // eprintln!("size {} {}",IMG_HEIGHT, num_cpus::get());
+    // print!("P3\n{} {}\n255\n", IMG_WIDTH, IMG_HEIGHT);
+    let rows = 0..IMG_HEIGHT;
 
     // Rayon splitting up the work to a couple cores. 
     let output: Vec<Colour> = rows
@@ -185,23 +185,12 @@ fn render(cam:Arc<Camera>, world_arc: Arc<HittableList>) {
 
     for (y, data) in chunk_rows.into_iter().enumerate() {
         for (x, (r,g,b)) in data.into_iter().enumerate() {
-            println!("{:?} {:?} {:?}",y,x , (r,g,b));
+            // println!("{:?} {:?} {:?}",y,x , (r,g,b));
             imgbuf.put_pixel(x as u32, y as u32, image::Rgb([*r, *g, *b]));
         }
     }
 
-    // Output the image 
-    // imgbuf.put_pixel(x, y, pixel);
-
-    // imgbuf.
-    // for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-    //     let r = (0.3 * x as f32) as u8;
-    //     let b = (0.3 * y as f32) as u8;
-    //     *pixel = image::Rgb([r, 0, b]);
-
-    // }
-
-    imgbuf.save("fractal2.png").unwrap();
+    imgbuf.save(frame).unwrap();
 
 }
 
@@ -210,12 +199,17 @@ fn main() {
 
     let world_arc = random_scene();
 
-    // for x in 1..600{
 
-    // }
+    // render 
+    for n in 1..601{
         // Camera
-        let lookfrom = Point3 { x:13.0, y:2.0, z: 2.0};
-        let lookat   = Point3 { x:0.0,  y:0.0, z: 0.0};
+        let t = (n as f64)/20.0;
+        let x_coord = 13.0 - t;
+        let y_coord = 2.0 + 0.1*t;
+        let z_coord = 3.0 - t;
+
+        let lookfrom = Point3 { x:x_coord, y:y_coord, z: z_coord};
+        let lookat   = Point3 { x:0.0,  y:1.0, z: 0.0};
         let vup      = Point3 { x:0.0,  y:1.0, z: 0.0};
         let dist_to_focus =  10.0;
         let aperture  =  0.1;
@@ -223,10 +217,16 @@ fn main() {
         // point3(-2,2,1), point3(0,0,-1)
         let cam = Arc::new(Camera::new(lookfrom,lookat,vup, 20.0,ASPECT_RATIO,aperture,dist_to_focus));
 
-        // x2 + y2 = 13;
+        let mut frame = "frame".to_string();
+        frame.push_str(&n.to_string());
+        frame.push_str(".png");
+        println!("{:?}",lookfrom);
 
 
-    render(cam, world_arc);
+        render(cam, world_arc.clone(), frame);
+
+
+    }
 
   
 }
