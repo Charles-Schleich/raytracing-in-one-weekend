@@ -25,14 +25,12 @@ use rayon::prelude::*;
 
 // Image + Camera Stuff
 const ASPECT_RATIO:f64 = 16.0 / 9.0;
-const IMG_WIDTH:i32 = 400;
-// const IMG_WIDTH:i32 = 400;
+const IMG_WIDTH:i32 = 3840;
 const IMG_HEIGHT:i32 = (IMG_WIDTH as f64 / ASPECT_RATIO) as i32 ;
 
 // Anti-Aliasing + Recurse Bounce 
-const SAMPLES_PER_PIXEL: i32 = 80;
-// const SAMPLES_PER_PIXEL: i32 = 80;
-const MAX_RAY_BOUNCE:u8 = 10;
+const SAMPLES_PER_PIXEL: i32 = 500;
+const MAX_RAY_BOUNCE:u8 = 50;
 
 
 fn ray_colour(r: Ray, world: &HittableList, depth:u8) -> Colour {
@@ -72,6 +70,9 @@ struct ThreadBounds {
 
 // fn process_image_chunk (tb:ThreadBounds, cam:Arc<Camera>, world: Arc<HittableList>) -> Vec<Colour>{
 fn process_line (row:f64, cam:Arc<Camera>, world: Arc<HittableList>) -> Vec<Colour> {
+
+    eprintln!("Running Row {}",row);
+
 
     let mut values:Vec<Colour> = Vec::new();
     let mut rng = rand::thread_rng();
@@ -213,24 +214,4 @@ fn main() {
         pixel_colour.write_colour(SAMPLES_PER_PIXEL);
     }
 
-    // process_line
-
-    //
-    // for row in (0..IMG_HEIGHT).rev() {
-    //     // eprintln!("Lines Remaining {}", row);
-    //     for col in 0..IMG_WIDTH { 
-
-    //         let mut pixel_colour: Colour = Colour::new();
-
-    //         for _ in 1..SAMPLES_PER_PIXEL {
-    //             let u = (col as f64 + rng.gen::<f64>() ) / (IMG_WIDTH) as f64;
-    //             let v = (row as f64 + rng.gen::<f64>() ) / (IMG_HEIGHT) as f64;
-
-    //             let ray= cam.getray(u, v);
-    //             pixel_colour = pixel_colour+ray_colour(ray,&world,MAX_RAY_BOUNCE); 
-    //         }
-
-            // pixel_colour.write_colour(SAMPLES_PER_PIXEL);
-    //     }
-    // }
 }
