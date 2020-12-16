@@ -141,7 +141,7 @@ impl Vec3 {
 
 
 impl Colour{
-  pub fn write_colour(self, samples_per_pixel:i32) -> (u16,u16,u16) {
+  pub fn write_colour(self, samples_per_pixel:i32) -> (u8,u8,u8) {
         let mut r = self.x;
         let mut g = self.y;
         let mut b = self.z;
@@ -154,9 +154,9 @@ impl Colour{
         b = f64::sqrt(b*scale);        
 
 
-        let i_r = (255.999 * clamp(r,0.0,0.999)).round() as u16;
-        let i_g = (255.999 * clamp(g,0.0,0.999)).round() as u16;
-        let i_b = (255.999 * clamp(b,0.0,0.999)).round() as u16;
+        let i_r = (255.999 * clamp(r,0.0,0.999)).round() as u8;
+        let i_g = (255.999 * clamp(g,0.0,0.999)).round() as u8;
+        let i_b = (255.999 * clamp(b,0.0,0.999)).round() as u8;
         // print!("{} {} {}\n", i_r, i_g, i_b)
         (i_r,i_g,i_b)
     }

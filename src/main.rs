@@ -26,7 +26,7 @@ use image::*;
 
 // Image + Camera Stuff
 const ASPECT_RATIO:f64 = 16.0 / 9.0;
-const IMG_WIDTH:u32 = 400;
+const IMG_WIDTH:u32 = 200;
 // const IMG_WIDTH:i32 = 400;
 const IMG_HEIGHT:u32 = (IMG_WIDTH as f64 / ASPECT_RATIO) as u32 ;
 
@@ -181,18 +181,27 @@ fn render(cam:Arc<Camera>, world_arc: Arc<HittableList>) {
     }
 
     let chunk_rows = rgbvec.chunks(IMG_WIDTH as usize);
-    // chunk_rows
-
-    // Output the image 
     let mut imgbuf = image::ImageBuffer::new(IMG_WIDTH, IMG_HEIGHT);
-    // imgbuf.
-    for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-        let r = (0.3 * x as f32) as u8;
-        let b = (0.3 * y as f32) as u8;
-        *pixel = image::Rgb([r, 0, b]);
+
+    for (y, data) in chunk_rows.into_iter().enumerate() {
+        for (x, (r,g,b)) in data.into_iter().enumerate() {
+            println!("{:?} {:?} {:?}",y,x , (r,g,b));
+            imgbuf.put_pixel(x as u32, y as u32, image::Rgb([*r, *g, *b]));
+        }
     }
 
-    imgbuf.save("fractal.png").unwrap();
+    // Output the image 
+    // imgbuf.put_pixel(x, y, pixel);
+
+    // imgbuf.
+    // for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
+    //     let r = (0.3 * x as f32) as u8;
+    //     let b = (0.3 * y as f32) as u8;
+    //     *pixel = image::Rgb([r, 0, b]);
+
+    // }
+
+    imgbuf.save("fractal2.png").unwrap();
 
 }
 
@@ -215,9 +224,6 @@ fn main() {
         let cam = Arc::new(Camera::new(lookfrom,lookat,vup, 20.0,ASPECT_RATIO,aperture,dist_to_focus));
 
         // x2 + y2 = 13;
-
-    
-
 
 
     render(cam, world_arc);
