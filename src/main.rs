@@ -28,12 +28,12 @@ use image::*;
 
 // Image + Camera Stuff
 const ASPECT_RATIO:f64 = 16.0 / 9.0;
-const IMG_WIDTH:u32 = 1920;
-// const IMG_WIDTH:i32 = 400;
+// const IMG_WIDTH:u32 = 1920;
+const IMG_WIDTH:u32 = 400;
 const IMG_HEIGHT:u32 = (IMG_WIDTH as f64 / ASPECT_RATIO) as u32 ;
 
 // Anti-Aliasing + Recurse Bounce 
-const SAMPLES_PER_PIXEL: i32 = 10;
+const SAMPLES_PER_PIXEL: i32 = 20;
 // const SAMPLES_PER_PIXEL: i32 = 80;
 const MAX_RAY_BOUNCE:u8 = 10;
 
@@ -201,6 +201,7 @@ fn main() {
 
     let world_arc = random_scene();
 
+    let mut elapsed_time = 0;
 
     // render 
     for n in 1..601{
@@ -214,7 +215,7 @@ fn main() {
         let lookat   = Point3 { x:0.0,  y:1.0, z: 0.0};
         let vup      = Point3 { x:0.0,  y:1.0, z: 0.0};
         let dist_to_focus =  10.0;
-        let aperture  =  0.1;
+        let aperture  =  0.00;
 
         // point3(-2,2,1), point3(0,0,-1)
         let cam = Arc::new(Camera::new(lookfrom,lookat,vup, 20.0,ASPECT_RATIO,aperture,dist_to_focus));
@@ -222,16 +223,27 @@ fn main() {
         let mut frame = "frame".to_string();
         frame.push_str(&n.to_string());
         frame.push_str(".png");
-        println!("{:?}",lookfrom);
+        // println!("{:?}",lookfrom);
 
         let start = Instant::now();
-
             render(cam, world_arc.clone(), frame);
         let duration = start.elapsed();
-        println!("Frame Time: {:?}s ", duration.as_secs());
-        println!("----------------");
 
+        // Time information
+        elapsed_time = elapsed_time + duration.as_secs();
+        let mean_frame_time = elapsed_time/n;
+        let t_left_seconds = mean_frame_time*(601-n);
+        println!("Frame Time: {:?}s ", duration.as_secs());
+        println!("Meanframe Time: {:?}s ", mean_frame_time);
+        println!("Estimated Time Remaining: {:?}s  ({:?} mins) ({:?} hours) ({:?} days) "
+                , t_left_seconds, t_left_seconds/60, (t_left_seconds/60)/60, ((t_left_seconds/60)/60)/24);
+        println!("----------------");
     }
 
   
+    println!("Total Time: as seconds: {:?} ", elapsed_time);
+    println!("            as minutes: {:?} ", elapsed_time/60);
+    println!("            as hours: {:?}s ", (elapsed_time/60)/60);
+    println!("            as days: {:?}s ", ((elapsed_time/60)/60)/24);
+
 }
