@@ -28,14 +28,12 @@ use image::*;
 
 // Image + Camera Stuff
 const ASPECT_RATIO:f64 = 16.0 / 9.0;
-// const IMG_WIDTH:u32 = 1920;
-const IMG_WIDTH:u32 = 400;
+const IMG_WIDTH:u32 = 1920;
 const IMG_HEIGHT:u32 = (IMG_WIDTH as f64 / ASPECT_RATIO) as u32 ;
 
 // Anti-Aliasing + Recurse Bounce 
-const SAMPLES_PER_PIXEL: i32 = 20;
-// const SAMPLES_PER_PIXEL: i32 = 80;
-const MAX_RAY_BOUNCE:u8 = 10;
+const SAMPLES_PER_PIXEL: i32 = 300;
+const MAX_RAY_BOUNCE:u8 = 20;
 
 
 fn ray_colour(r: Ray, world: &HittableList, depth:u8) -> Colour {
@@ -118,13 +116,13 @@ fn random_scene() -> Arc<HittableList> {
 
                 let material:Arc<Material>;
 
-                if choose_mat < 0.4 {
+                if choose_mat < 0.6 {
                     // diffuse
                     let albedo = Colour::random() * Colour::random();
                     material = Arc::new(Lambertian{ albedo:albedo });
                     world.add(Arc::new(Sphere{ center: center, radius: 0.2, mat_ptr:material}));
                       
-                } else if choose_mat < 0.7 {
+                } else if choose_mat < 0.8 {
                     // metal
                     let albedo = Colour::random() * Colour::random();
                     let fuzz = rng.gen_range(0.0, 0.2);
@@ -142,7 +140,8 @@ fn random_scene() -> Arc<HittableList> {
     let material1   = Arc::new(Dielectric{ ir: 1.5 });
     world.add(Arc::new(Sphere{ center: Point3{x:0.0,y:1.0,z:0.0}, radius: 1.0, mat_ptr:material1}));
 
-    let material2 = Arc::new(Lambertian{ albedo:Colour{x:0.4,y:0.2,z:0.1}  });
+    //let material2 = Arc::new(Lambertian{ albedo:Colour{x:0.4,y:0.2,z:0.1}  });
+    let material2 = Arc::new(Lambertian{ albedo:Colour{x:0.0,y:0.08431372549,z:0.21960784313}  });
     world.add(Arc::new(Sphere{ center: Point3{x:-4.0,y:1.0,z:0.0}, radius: 1.0, mat_ptr:material2}));
 
     let material3 = Arc::new(Metal{ albedo:Colour{x:0.7,y:0.6,z:0.5}, fuzz:0.0  });
